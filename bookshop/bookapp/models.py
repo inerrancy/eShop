@@ -107,7 +107,7 @@ class Book(Product):
     wt = models.CharField(max_length=255, verbose_name='Вес')
 
     def __str__(self):
-        return "{} : {}".format(self.category.name, self.title)
+        return f"{self.category.name} : {self.title}"
 
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
@@ -118,7 +118,7 @@ class OfficeSupply(Product):
     wt = models.CharField(max_length=255, verbose_name='Вес,г')
 
     def __str__(self):
-        return "{} : {}".format(self.category.name, self.title)
+        return f"{self.category.name} : {self.title}"
 
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
@@ -134,7 +134,7 @@ class CartProduct(models.Model):
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Сумма заказа')
 
     def __str__(self):
-        return f"Товар {self.product.title} для корзины"
+        return f"Товар {self.content_object.title} для корзины"
 
 
 class Cart(models.Model):
@@ -142,6 +142,8 @@ class Cart(models.Model):
     products = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     total_products = models.PositiveIntegerField(default=0)
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Сумма заказа')
+    in_order = models.BooleanField(default=False)
+    for_anonymous_user = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
