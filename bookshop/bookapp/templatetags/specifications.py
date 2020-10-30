@@ -1,6 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+from bookapp.models import OfficeSupply
 
 register = template.Library()
 
@@ -34,7 +35,9 @@ PRODUCT_SPEC = {
     },
     'officesupply': {
         'Формат': 'format',
-        'Вес, г': 'wt'
+        'Вес, г': 'wt',
+        'Наличие производителя': 'manufacturer',
+        'Производитель': 'manufacturer_name'
     }
 }
 
@@ -49,6 +52,12 @@ def get_product_spec(product, model_name):
 @register.filter
 def product_spec(product):
     model_name = product.__class__._meta.model_name
+    if isinstance(product, OfficeSupply):
+        if not product.manufacturer:
+            PRODUCT_SPEC['officesupply'].pop('Наличие производителя')
+            PRODUCT_SPEC['officesupply'].pop('Производитель')
+        else:
+            PRODUCT_SPEC['officesupply']['Производитель'] = 'manufacturer_name'
     return mark_safe(TABLE_HEAD + get_product_spec(product, model_name) + TABLE_BOTTOM)
 
 

@@ -13,6 +13,10 @@ from io import BytesIO
 User = get_user_model()
 
 
+def get_models_for_count(*model_names):
+    return [models.Count(model_name) for model_name in model_names]
+
+
 def get_product_url(obj, viewname):
     ct_model = obj.__class__._meta.model_name
     return reverse(viewname, kwargs={'ct_model': ct_model, 'slug': obj.slug})
@@ -50,9 +54,26 @@ class LatestProducts:
     objects = LatestProductsManager()
 
 
+class CategoryManager(models.Manager):
+
+    CATEGORY_NAME_COUNT_NAME = {
+        'Книги': 'book__count',
+        'Канцтовары': 'officesupply__count'
+    }
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def get_categories_for_sidebar(self):
+        models = get_models_for_count('book', 'officesupply')
+        qs = list(self.get_queryset().annotate(*models).values())
+        return [dict(name=c['name'], slug=c['slug'], count=c[self.CATEGORY_NAME_COUNT_NAME[c['name']]]) for c in qs]
+
+
 class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name='Имя категории')
     slug = models.SlugField(unique=True)
+    objects = CategoryManager()
 
     def __str__(self):
         return self.name
@@ -116,6 +137,10 @@ class Book(Product):
 class OfficeSupply(Product):
     format = models.CharField(max_length=255, verbose_name='Размер')
     wt = models.CharField(max_length=255, verbose_name='Вес,г')
+    manufacturer = models.BooleanField(default=False, verbose_name='Наличие производителя')
+    manufacturer_name = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name='Производитель'
+    )
 
     def __str__(self):
         return f"{self.category.name} : {self.title}"

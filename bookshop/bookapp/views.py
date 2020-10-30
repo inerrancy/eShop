@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.views.generic import DetailView
 
-from .models import Book, OfficeSupply
+from .models import Book, OfficeSupply, Category
 
 
 def test_view(request):
-    return render(request, 'base.html', {})
+    categories = Category.objects.get_categories_for_sidebar()
+    return render(request, 'base.html', {'categories': categories})
 
 
 class ProductDetailView(DetailView):

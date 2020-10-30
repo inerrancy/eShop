@@ -30,6 +30,22 @@ from .models import *
 #     #     return image
 
 
+class OfficeSupplyAdminForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+        if not instance.manufacturer:
+            self.fields['manufacturer_name'].widget.attrs.update({
+                'readonly': True, 'style': 'background: gray;'
+            })
+
+    def clean(self):
+        if not self.cleaned_data['manufacturer']:
+            self.cleaned_data['manufacturer_name'] = None
+        return self.cleaned_data
+
+
 class BookAdmin(admin.ModelAdmin):
     # form = BookAdminForm
 
@@ -40,6 +56,9 @@ class BookAdmin(admin.ModelAdmin):
 
 
 class OfficeSupplyAdmin(admin.ModelAdmin):
+
+    change_form_template = 'admin.html'
+    form = OfficeSupplyAdminForm
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'category':
